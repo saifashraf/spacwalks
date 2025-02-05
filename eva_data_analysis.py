@@ -3,9 +3,9 @@ import csv
 
 
 # https://data.nasa.gov/resource/eva.json (with modifications)
-data_f = open('/Users/asaifullah/Documents/BioNT_Training/spacewalks/eva-data.json', 'r')
-data_t = open('/Users/asaifullah/Documents/BioNT_Training/spacewalks/eva-data.csv','w')
-g_file = 'myplot.png'
+input_file = open('/Users/asaifullah/Documents/BioNT_Training/spacewalks/eva-data.json', 'r')
+output_file = open('/Users/asaifullah/Documents/BioNT_Training/spacewalks/eva-data.csv','w')
+graph_file = 'myplot.png'
 
 fieldnames = ("EVA #", "Country", "Crew    ", "Vehicle", "Date", "Duration", "Purpose")
 
@@ -13,14 +13,14 @@ data=[]
 
 
 for i in range(374):
-    line=data_f.readline()
+    line=input_file.readline()
     print(line)
     data.append(json.loads(line[1:-1]))
 #data.pop(0)
 ## Comment out this bit if you don't want the spreadsheet
 
 
-w=csv.writer(data_t)
+w=csv.writer(output_file)
 
 import datetime as dt
 
@@ -61,5 +61,5 @@ plt.plot(date,t[1:], 'ko-')
 plt.xlabel('Year')
 plt.ylabel('Total time spent in space to date (hours)')
 plt.tight_layout()
-plt.savefig(g_file)
+plt.savefig(graph_file)
 plt.show()
