@@ -1,49 +1,46 @@
-# Importing required libraries
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# File paths
-input_file = open('./eva-data.json', 'r')  # Input JSON data file (containing EVA records)
-output_file = open('./eva-data.csv', 'w')  # Output CSV file to store cleaned data
-graph_file = './cumulative_eva_graph.png'  # Path to save the cumulative EVA graph
+def read_json_to_dataframe(input_file):
+    print(f'Reading JSON file {input_file}')
+    # Read the data from a JSON file into a Pandas dataframe
+    eva_df = pd.read_json(input_file, convert_dates=['date'])
+    eva_df['eva'] = eva_df['eva'].astype(float)
+    # Clean the data by removing any incomplete rows and sort by date
+    eva_df.dropna(axis=0, inplace=True)
+    eva_df.sort_values('date', inplace=True)
+    return eva_df
 
-# Load the JSON data into a Pandas DataFrame
-# Convert 'date' column to DateTime format for proper sorting
-eva_df = pd.read_json(input_file, convert_dates=['date'])  
 
-# Convert the 'eva' column to float (if it represents a numerical value)
-eva_df['eva'] = eva_df['eva'].astype(float)
+def write_dataframe_to_csv(df, output_file):
+    print(f'Saving to CSV file {output_file}')
+    # Save dataframe to CSV file for later analysis
+    df.to_csv(output_file, index=False)
 
-# Remove rows with missing values to ensure data consistency
-eva_df.dropna(axis=0, inplace=True)
 
-# Sort the data by date to maintain chronological order
-eva_df.sort_values('date', inplace=True)
+# Main code
 
-# Save the cleaned data as a CSV file for future reference
-eva_df.to_csv(output_file, index=False)
+print("--START--")
 
-# Convert EVA duration from HH:MM format into decimal hours
-eva_df['duration_hours'] = eva_df['duration'].str.split(":").apply(lambda x: int(x[0]) + int(x[1]) / 60)
+input_file = open('./eva-data.json', 'r')
+output_file = open('./eva-data.csv', 'w')
+graph_file = './cumulative_eva_graph.png'
 
-# Compute cumulative EVA time over the years
-eva_df['cumulative_time'] = eva_df['duration_hours'].cumsum()
+# Read the data from JSON file
+eva_data = read_json_to_dataframe(input_file)
 
-# Plot the cumulative EVA time over time
-plt.plot(eva_df['date'], eva_df['cumulative_time'], 'ko-', label='Cumulative EVA Time')
+# Convert and export data to CSV file
+write_dataframe_to_csv(eva_data, output_file)
 
-# Adding labels and title
-plt.xlabel('Year')  # X-axis label
-plt.ylabel('Total time spent in space to date (hours)')  # Y-axis label
-plt.title('Cumulative Extravehicular Activity (EVA) Time Over Years')  # Title of the graph
-
-# Improve layout for better visibility
-plt.legend()
-plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+print(f'Plotting cumulative spacewalk duration and saving to {graph_file}')
+# Plot cumulative time spent in space over years
+eva_data['duration_hours'] = eva_data['duration'].str.split(":").apply(lambda x: int(x[0]) + int(x[1])/60)
+eva_data['cumulative_time'] = eva_data['duration_hours'].cumsum()
+plt.plot(eva_data['date'], eva_data['cumulative_time'], 'ko-')
+plt.xlabel('Year')
+plt.ylabel('Total time spent in space to date (hours)')
 plt.tight_layout()
-
-# Save the graph to a file
 plt.savefig(graph_file)
-
-# Display the plot
 plt.show()
+
+print("--END--")
